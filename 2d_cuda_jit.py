@@ -210,7 +210,6 @@ def compute_betaY(K, Xbd, Vbd, betaY, threads_per_block, blocks):
         compute_betaYt_[blocks, threads_per_block](t, K, betaY, dW1, dW2, Xbd, Vbd, uniform_St_1, uniform_Vt_1)
     return betaY
 
-#@cuda.jit
 def P(K, Xbd, Vbd, betaY, threads_per_block, blocks):
     betaY = compute_betaY(K, Xbd, Vbd, betaY, threads_per_block, blocks)
     Vt_1 = V0
