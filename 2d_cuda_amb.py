@@ -3,7 +3,7 @@
 """
 Created on Mon Dec 25 10:08:19 2023
 
-@author: yihan
+@author: yihanZzz
 """
 
 import time
@@ -12,30 +12,6 @@ from numba import cuda, float64, int32
 import math
 import cupy as cp
 
-'''@cuda.jit(device = True)
-def LDV1(mu, L1, U1, L2, U2, N, X1, logisticdisX1, X2, logisticdisX2): #generate logistic distributed samples
-    fxl1 = 1 / (1 + math.exp(-mu * L1))
-    fxu1 = 1 / (1 + math.exp(-mu * U1))
-    fxl2 = 1 / (1 + math.exp(-mu * L2))
-    fxu2 = 1 / (1 + math.exp(-mu * U2))
-    for i in range(N):
-        logisticdisX1[i,0] = -(1 / mu) * math.log(1/(fxl1 + X1[i,0] * (fxu1 - fxl1)) - 1)
-        logisticdisX2[i,0] = -(1 / mu) * math.log(1/(fxl2 + X2[i,0] * (fxu2 - fxl2)) - 1)
-
-
-@cuda.jit(device = True)
-def simulate(St_1, St_T, Vt_1, Vt_T, dW1, dW2):
-    for i in range(noi):
-        Vt_T[i,0] = abs(Vt_1[i,0] + kappa*(theta - Vt_1[i,0])*dt + sigma*math.sqrt(Vt_1[i,0]*dt)*dW1[i,0])
-        St_T[i,0] = St_1[i,0] + (r - 0.5 * Vt_1[i,0]) * dt + math.sqrt(Vt_1[i,0]) \
-        * (rho * dW1[i,0] + math.sqrt(1 - rho**2) * dW2[i,0]) * math.sqrt(dt)
-
-@cuda.jit(device = True)
-def get_T1(i, j, dW1, dW2, Xbd, Vbd, uniform_St_1, St_1, St_T, uniform_Vt_1, Vt_1, Vt_T):
-    LDV1(mu, Xbd[i], Xbd[i+1], Vbd[j], Vbd[j+1], noi, uniform_St_1, St_1, uniform_Vt_1, Vt_1)
-    simulate(St_1, St_T, Vt_1, Vt_T, dW1, dW2)'''
-    
-#previous functions 'LDV1, simulate, get_T1' are now simplified to a simple function 'get_T1'
 @cuda.jit(device = True)
 def get_T1(i, j, dW1, dW2, Xbd, Vbd, uniform_St_1, St_1, St_T, uniform_Vt_1, Vt_1, Vt_T):
     fxl1 = 1 / (1 + math.exp(-mu * Xbd[i]))
@@ -198,9 +174,8 @@ def compute_Yt_final(t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, St_T, Vt_T
         betaZ2t = cuda.local.array(shape=(noi,NX), dtype=float64)
         indbdX = cuda.local.array(shape=(noi,1), dtype=int32)
         indbdV = cuda.local.array(shape=(noi,1), dtype=int32)
-        #searchsorted(Xbd, St_T, indbdX) #index of box for each path
+        #index of box for each path
         searchsorted(Xbd, St_T, indbdX, Vbd, Vt_T, indbdV)
-        #Xt = cuda.local.array(shape=(noi,NX), dtype=float64)
         compute_Xt(St_T, Vt_T, Xt_1)
         for jj in range(noi):
             for jjj in range(NX):
@@ -208,9 +183,6 @@ def compute_Yt_final(t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, St_T, Vt_T
                 betaZ1t[jj,jjj] = betaZ1[jjj,indbdX[jj,0],indbdV[jj,0],Nt-t-3]
                 betaZ2t[jj,jjj] = betaZ2[jjj,indbdX[jj,0],indbdV[jj,0],Nt-t-3]
         compute_YtZt(K, St_T, Xt_1, betaYt, Yt, betaZ1t, Z1t, betaZ2t, Z2t, dW1, dW2)
-        '''for jj in range(noi):
-            Yt[jj,0] = max(max(K - math.exp(St_T[jj,0]), 0),Yt[jj,0])
-            Yt[jj,0] = Yt[jj,0] - r * Yt[jj,0]*dt'''
 
 
 @cuda.jit(device=True)
@@ -219,7 +191,6 @@ def compute_betaYt(i, j, t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, unifor
     St_T = cuda.local.array(shape=(noi,1), dtype=float64)
     Vt_1 = cuda.local.array(shape=(noi,1), dtype=float64)
     Vt_T = cuda.local.array(shape=(noi,1), dtype=float64)
-    #cum_gen = cuda.local.array(shape=(noi,1), dtype=float64)
     Xt_1 = cuda.local.array(shape=(noi,NX), dtype=float64)
     Yt = cuda.local.array(shape=(noi,1), dtype=float64)
     Z1t = cuda.local.array(shape=(noi,1), dtype=float64)
@@ -241,10 +212,6 @@ def compute_betaYt(i, j, t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, unifor
 
 @cuda.jit
 def compute_betaYt_(t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, uniform_St_1, uniform_Vt_1):
-    #dW1_ = cuda.shared.array((noi,1), float64)
-    #dW2_ = cuda.shared.array((noi,1), float64)
-    #copy_matrix(dW1, dW1_)
-    #copy_matrix(dW2, dW2_)
     uniform_St_1_ = cuda.shared.array((noi,1), float64)
     uniform_Vt_1_ = cuda.shared.array((noi,1), float64)
     copy_matrix(uniform_St_1, uniform_St_1_)
@@ -253,8 +220,6 @@ def compute_betaYt_(t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, uniform_St_
     Vbd_ = cuda.shared.array((noh_1,), float64)
     dW1_ = cuda.const.array_like(dW1)
     dW2_ = cuda.const.array_like(dW2)
-    #BetaY_ = cuda.const.array_like(betaY)
-    #BetaY_Euro = cuda.const.array_like(betaY_Euro)
     for ii in range(noh_1):
         Xbd_[ii] = Xbd[ii]
         Vbd_[ii] = Vbd[ii]
@@ -269,10 +234,7 @@ def compute_betaY(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks)
         uniform_Vt_1 = cp.random.uniform(0, 1, (noi, 1))
         dW1 = cp.random.randn(noi,1)
         dW2 = cp.random.randn(noi,1)
-        #print('time =',t)
         compute_betaYt_[blocks, threads_per_block](t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, uniform_St_1, uniform_Vt_1)
-        #betaY[:,:,:,Nt-t-2] = betaY_
-        #cuda.synchronize()
     return betaY, betaZ1, betaZ2
 
 #@cuda.jit
