@@ -283,10 +283,10 @@ def compute_(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks, iter
 global S0, K, V0, r, kappa, theta, sigma, rho, T, Nt, noh, noi, mu, Xmin, Xmax, Vmin, Vmax, NX, dt, BD, Xbd, Vbd
 
 S0 = 100
-Nt = 5 # number of time steps
+Nt = 25 # number of time steps
 mu = 1 # parameter for logistic sample generating
 V0 = 0.04 # initial volatility
-T = 0.1 # time horizon
+T = 0.5 # time horizon
 r = 0.04 # risk-free rate
 kappa = 1.58
 theta = 0.03
