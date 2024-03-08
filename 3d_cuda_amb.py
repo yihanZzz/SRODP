@@ -28,15 +28,6 @@ def compute_Xt(St_T, Vt_T, Rt_T, Xt): #form polynomials
         Xt[i,1] = 1 - St_T[i,0]
         Xt[i,2] = 1 - Vt_T[i,0]
         Xt[i,3] = 1 - Rt_T[i,0]
-        #Xt[i,1] = 1 - St_T[i,0]
-        #Xt[i,2] = St_T[i,0]**2/2 - 2*St_T[i,0] + 1
-        #Xt[i,3] = 1 - Vt_T[i,0]
-        #Xt[i,4] = Vt_T[i,0]**2/2 - 2*Vt_T[i,0] + 1
-        #Xt[i,5] = 1 - Rt_T[i,0]
-        #Xt[i,6] = Rt_T[i,0]**2/2 - 2*Rt_T[i,0] + 1
-        #Xt[i,7] = Xt[i,1]*Xt[i,3]
-        #Xt[i,8] = Xt[i,1]*Xt[i,5]
-        #Xt[i,9] = Xt[i,3]*Xt[i,5]
 
 @cuda.jit(device = True)
 def compute_Yt(Xt, betaYt, Yt): #compute least square fitted value
@@ -169,7 +160,6 @@ def compute_Yt_final(t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, Xbd, Vb
         searchsorted(Xbd, St_T, indbdX) #index of box for each path
         searchsorted(Vbd, Vt_T, indbdV)
         searchsorted(Rbd, Rt_T, indbdR)
-        #Xt = cuda.local.array(shape=(noi,NX), dtype=float64)
         compute_Xt(St_T, Vt_T, Rt_T, Xt_1)
         for jj in range(noi):
             for jjj in range(NX):
@@ -197,7 +187,6 @@ def compute_betaYt(i, j, k, t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, 
     Vt_T = cuda.local.array(shape=(noi,1), dtype=float64)
     Rt_1 = cuda.local.array(shape=(noi,1), dtype=float64)
     Rt_T = cuda.local.array(shape=(noi,1), dtype=float64)
-    #cum_gen = cuda.local.array(shape=(noi,1), dtype=float64)
     Xt_1 = cuda.local.array(shape=(noi,NX), dtype=float64)
     Yt = cuda.local.array(shape=(noi,1), dtype=float64)
     Z1t = cuda.local.array(shape=(noi,1), dtype=float64)
@@ -222,23 +211,12 @@ def compute_betaYt(i, j, k, t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, 
 
 @cuda.jit
 def compute_betaYt_(t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, Xbd, Vbd, Rbd, uniform_St_1, uniform_Vt_1, uniform_Rt_1):
-    #dW1_ = cuda.shared.array((noi,1), float64)
-    #dW2_ = cuda.shared.array((noi,1), float64)
-    #copy_matrix(dW1, dW1_)
-    #copy_matrix(dW2, dW2_)
-    #uniform_St_1_ = cuda.const.array_like(uniform_St_1)
-    #uniform_Vt_1_ = cuda.const.array_like(uniform_Vt_1)
-    #uniform_Rt_1_ = cuda.const.array_like(uniform_Rt_1)
-    #copy_matrix(uniform_St_1, uniform_St_1_)
-    #copy_matrix(uniform_Vt_1, uniform_Vt_1_)
-    #copy_matrix(uniform_Rt_1, uniform_Rt_1_)
     Xbd_ = cuda.shared.array((noh_1,), float64)
     Vbd_ = cuda.shared.array((noh_1,), float64)
     Rbd_ = cuda.shared.array((noh_1,), float64)
     dW1_ = cuda.const.array_like(dW1)
     dW2_ = cuda.const.array_like(dW2)
     dW3_ = cuda.const.array_like(dW3)
-    #BetaY_ = cuda.const.array_like(betaY)
     for ii in range(noh_1):
         Xbd_[ii] = Xbd[ii]
         Vbd_[ii] = Vbd[ii]
@@ -258,8 +236,6 @@ def compute_betaY(K, Xbd, Vbd, Rbd, betaY, betaZ1, betaZ2, betaZ3, threads_per_b
         dW3 = cp.random.randn(noi,1)
         #print('time =',t)
         compute_betaYt_[blocks, threads_per_block](t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, Xbd, Vbd, Rbd, uniform_St_1, uniform_Vt_1, uniform_Rt_1)
-        #betaY[:,:,:,Nt-t-2] = betaY_
-        #cuda.synchronize()
     return betaY, betaZ1, betaZ2, betaZ3
 
 #@cuda.jit
@@ -282,14 +258,10 @@ def P(K, Xbd, Vbd, Rbd, betaY, betaZ1, betaZ2, betaZ3, threads_per_block, blocks
     indbdV = cp.searchsorted(Vbd, Vt_T)-1
     indbdR = cp.searchsorted(Rbd, Rt_T)-1
     XS1 = 1 - St_T
-    #XS2 = St_T**2/2 - 2*St_T + 1
     XV1 = 1 - Vt_T
-    #XV2 = Vt_T**2/2 - 2*Vt_T + 1
     XR1 = 1 - Rt_T
-    #XR2 = Rt_T**2/2 - 2*Rt_T + 1
     X0 = cp.ones((lenT2,1))
     Xt = cp.hstack((X0,XS1,XV1,XR1))
-    #Xt = cp.hstack((X0,XS1,XS2,XV1,XV2,XR1,XR2,XS1*XV1,XS1*XR1,XV1*XR1))
     betaYt = cp.zeros((lenT2,NX))
     betaZ1t = cp.zeros((lenT2,NX))
     betaZ2t = cp.zeros((lenT2,NX))
@@ -350,7 +322,7 @@ BD = cp.array([[Xmin, Xmax],[Vmin, Vmax],[Rmin, Rmax]])
 Xbd = cp.linspace(BD[0,0],BD[0,1],num=noh+1)
 Vbd = cp.linspace(BD[1,0],BD[1,1],num=noh+1)
 Rbd = cp.linspace(BD[2,0],BD[2,1],num=noh+1)
-NX=4#NX = 10 #number of polynomial functions
+NX=4 #number of polynomial functions
 noh_1 = noh+1
 betaY = cp.zeros((NX,noh,noh,noh),dtype=cp.float64)
 betaZ1 = cp.zeros([NX, noh, noh, noh],dtype=cp.float64)
