@@ -31,10 +31,7 @@ def compute_Xt(St_T, Vt_T, Xt): #form polynomials
     for i in range(noi):
         Xt[i,0] = 1
         Xt[i,1] = 1 - St_T[i,0]
-        Xt[i,2] = St_T[i,0]**2/2 - 2*St_T[i,0] + 1
-        Xt[i,3] = 1 - Vt_T[i,0]
-        Xt[i,4] = Vt_T[i,0]**2/2 - 2*Vt_T[i,0] + 1
-        Xt[i,5] = Xt[i,1]*Xt[i,3]
+        Xt[i,2] = 1 - Vt_T[i,0]
 
 @cuda.jit(device = True)
 def compute_YtZt(K, St_T, Xt, betaYt, Yt, betaZ1t, Z1t, betaZ2t, Z2t, dW1, dW2): #compute least square fitted value
@@ -237,7 +234,6 @@ def compute_betaY(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks)
         compute_betaYt_[blocks, threads_per_block](t, K, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, uniform_St_1, uniform_Vt_1)
     return betaY, betaZ1, betaZ2
 
-#@cuda.jit
 def P(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks):
     betaY, betaZ1, betaZ2 = compute_betaY(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks)
     Vt_1 = V0
@@ -253,11 +249,9 @@ def P(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks):
     indbdX = cp.searchsorted(Xbd, St_T)-1
     indbdV = cp.searchsorted(Vbd, Vt_T)-1
     XS1 = 1 - St_T
-    XS2 = St_T**2/2 - 2*St_T + 1
     XV1 = 1 - Vt_T
-    XV2 = Vt_T**2/2 - 2*Vt_T + 1
     X0 = cp.ones((lenT2,1))
-    Xt = cp.hstack((X0,XS1,XS2,XV1,XV2,XS1*XV1))
+    Xt = cp.hstack((X0,XS1,XV1))
     betaYt = cp.zeros((lenT2,NX))
     betaZ1t = cp.zeros((lenT2,NX))
     betaZ2t = cp.zeros((lenT2,NX))
@@ -308,7 +302,7 @@ Vmax = 1
 BD = cp.array([[Xmin, Xmax],[Vmin, Vmax]])
 Xbd = cp.linspace(BD[0,0],BD[0,1],num=noh+1)
 Vbd = cp.linspace(BD[1,0],BD[1,1],num=noh+1)
-NX = 6 #number of polynomial functions
+NX = 3 #number of polynomial functions
 noh_1 = noh+1
 betaY = cp.zeros((NX,noh,noh,Nt-1),dtype=cp.float64)
 betaZ1 = cp.zeros([NX, noh, noh, Nt-1],dtype=cp.float64)
