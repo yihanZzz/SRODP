@@ -13,6 +13,6 @@ This repository is the official implementation of the paper [Monte Carlo methods
 ***
 
 ## Dependencies
-* math
 * cupy
+* math
 * numba
