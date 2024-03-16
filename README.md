@@ -1,6 +1,6 @@
 # Stratified Regression One-step forward Dynamic Programming (SRODP)
  
-This repository is the official implementation of the paper [Monte Carlo methods for real options under parameter uncertainty in multi-dimensional models](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3549891).
+This repository is the official implementation of the paper [An RBSDE based Monte Carlo method for solving optimal stopping problems under parameter uncertainty](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3549891).
  
 ## Files
  
