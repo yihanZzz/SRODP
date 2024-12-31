@@ -47,7 +47,7 @@ def compute_YtZt(K, St_T, Xt, betaYt, Yt, betaZ1t, Z1t, betaZ2t, Z2t, dW1, dW2):
         Z1t[i,0] =  Z1
         Z2t[i,0] =  Z2
         Yt[i,0] = max(max(K - math.exp(St_T[i,0]), 0),Yt[i,0])
-        Yt[i,0] = Yt[i,0] - (r * Yt[i,0] + math.sqrt((0.1395*Z1t[i,0]**2 + 0.1900*Z2t[i,0]**2)*0.2107))*dt
+        Yt[i,0] = Yt[i,0] - (r * Yt[i,0] + math.sqrt((0.1395**2*Z1t[i,0]**2 + 0.1900**2*Z2t[i,0]**2)*0.2107))*dt
         Z1t[i,0] = Yt[i,0]*dW1[i,0]*math.sqrt(dt)
         Z2t[i,0] = Yt[i,0]*dW2[i,0]*math.sqrt(dt)
         
@@ -268,7 +268,7 @@ def P(K, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks):
             Z1t[i,0] += Xt[i,j]*betaZ1t[i,j]/dt
             Z2t[i,0] += Xt[i,j]*betaZ2t[i,j]/dt
     Yt = cp.maximum(cp.maximum(K - cp.exp(St_T),0),Yt)
-    cum_gen = - r * Yt - cp.sqrt((0.1395*Z1t**2 + 0.1900*Z2t**2)*0.2107)
+    cum_gen = - r * Yt - cp.sqrt((0.1395**2*Z1t**2 + 0.1900**2*Z2t**2)*0.2107)
     Yt = Yt + cum_gen * dt
     RBSDEvalue = cp.maximum(cp.mean(Yt), cp.maximum(K - S0,0))
     return RBSDEvalue
