@@ -7,9 +7,9 @@ This repository is the official implementation of the paper [An RBSDE based Mont
 | Title | Description |
 |-------|-----|
 | 2d_cuda_jit.py | Replication code for Table 1-2|
-| 2d_cuda_amb.py | Replication code for Table 3-4|
-| 3d_cuda_amb.py | Replication code for Table 5-6|
-| fish_cuda_amb.py | Replication code for Table 7-9|
+| 2d_cuda_amb.py | Replication code for Table 3-8|
+| 3d_cuda_amb.py | Replication code for Table 9-10|
+| fish_cuda_amb.py | Replication code for Table 11-13|
 ***
 
 ## Dependencies
