@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 28 22:30:12 2023
+
+@author: yihanZzz
+"""
+
 import time
 from numba import cuda, float64, int32
 #from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float64
@@ -168,7 +175,7 @@ def compute_Yt_final(t, S0, betaY, betaZ1, betaZ2, dW1, dW2, Xbd, Vbd, St_T, Vt_
             y3 = f*3*w0*b*c*math.exp(-3*c*(t+1)*dt)*(b - a*math.exp(c*(t+1)*dt))**2
             y4 = R*math.exp(-m*(t+2)*dt)*w0*((a-b*math.exp(-c*(t+2)*dt))**3)
             Yt[jj,0] = max(max((math.exp(St_T[jj,0]) - H)*y4, 0),Yt[jj,0])
-            Yt[jj,0] = Yt[jj,0] + (- r*Yt[jj,0] - C*y2*y3 - math.sqrt((0.1992*Z1t[jj,0]**2 + 0.1900*Z2t[jj,0]**2)*chi))*dt
+            Yt[jj,0] = Yt[jj,0] + (- r*Yt[jj,0] - C*y2*y3 - math.sqrt(((0.1992**2)*Z1t[jj,0]**2 + (0.1900**2)*Z2t[jj,0]**2)*chi))*dt
             Z1t[jj,0] = Yt[jj,0]*dW1[jj,0]*math.sqrt(dt)
             Z2t[jj,0] = Yt[jj,0]*dW2[jj,0]*math.sqrt(dt)
 
@@ -259,7 +266,7 @@ def P(S0, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks):
     y3 = f*3*w0*b*c*cp.exp(-3*c*(t+1)*dt)*(b - a*cp.exp(c*(t+1)*dt))**2
     y4 = R*cp.exp(-m*(t+2)*dt)*w0*((a-b*cp.exp(-c*(t+2)*dt))**3)
     Yt = cp.maximum(cp.maximum((cp.exp(St_T) - H)*y4, 0),Yt)
-    Yt = Yt + (- r*Yt - C*y2*y3 - cp.sqrt((0.1992*Z1t**2 + 0.1900*Z2t**2)*chi))*dt
+    Yt = Yt + (- r*Yt - C*y2*y3 - cp.sqrt(((0.1992**2)*Z1t**2 + (0.1900**2)*Z2t**2)*chi))*dt
     return cp.mean(Yt)
 
 def compute_(S0, Xbd, Vbd, betaY, betaZ1, betaZ2, threads_per_block, blocks, iter):
