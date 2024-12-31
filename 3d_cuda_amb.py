@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 28 22:30:12 2023
+
+@author: yihanZzz
+"""
+
 import time
 from numba import cuda, float64, int32
 #from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float64
@@ -173,7 +180,7 @@ def compute_Yt_final(t, K, betaY, betaZ1, betaZ2, betaZ3, dW1, dW2, dW3, Xbd, Vb
         compute_Zt(Xt_1, betaZ3t, Z3t)
         for jj in range(noi):
             Yt[jj,0] = max(max(K - math.exp(St_T[jj,0]), 0),Yt[jj,0])
-            Yt[jj,0] = Yt[jj,0] - (Rt_1[jj,0] * Yt[jj,0] + math.sqrt((0.1395*Z1t[jj,0]**2 + 0.1900*Z2t[jj,0]**2 + 0.1992*Z3t[jj,0]**2)*0.5844))*dt
+            Yt[jj,0] = Yt[jj,0] - (Rt_1[jj,0] * Yt[jj,0] + math.sqrt(((0.1395**2)*Z1t[jj,0]**2 + (0.1900**2)*Z2t[jj,0]**2 + (0.1992**2)*Z3t[jj,0]**2)*0.5844))*dt
             Z1t[jj,0] = Yt[jj,0]*dW1[jj,0]*math.sqrt(dt)
             Z2t[jj,0] = Yt[jj,0]*dW2[jj,0]*math.sqrt(dt)
             Z3t[jj,0] = Yt[jj,0]*dW3[jj,0]*math.sqrt(dt)
@@ -282,7 +289,7 @@ def P(K, Xbd, Vbd, Rbd, betaY, betaZ1, betaZ2, betaZ3, threads_per_block, blocks
             Z2t[i,0] += Xt[i,j]*betaZ2t[i,j]/dt
             Z3t[i,0] += Xt[i,j]*betaZ3t[i,j]/dt
     Yt = cp.maximum(cp.maximum(K - cp.exp(St_T),0),Yt)
-    cum_gen = - R0 * Yt - cp.sqrt((0.1395*Z1t**2 + 0.1900*Z2t**2 + 0.1992*Z3t**2)*0.5844)
+    cum_gen = - R0 * Yt - cp.sqrt(((0.1395**2)*Z1t**2 + (0.1900**2)*Z2t**2 + (0.1992**2)*Z3t**2)*0.5844)
     Yt = Yt + cum_gen * dt
     RBSDEvalue = cp.mean(Yt)
     return RBSDEvalue
