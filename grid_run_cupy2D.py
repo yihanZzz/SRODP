@@ -368,12 +368,13 @@ def main():
             
                                 t0 = time.time()
             
-                                betaY, betaZ1, betaZ2 = solver.compute_betaY(K)
+                                #betaY, betaZ1, betaZ2 = solver.compute_betaY(K)
             
                                 prices = cp.zeros(iterations)
                                 for i in range(iterations):
                                     if i % 10 == 0:
                                         print(f"  Pricing iteration {i}/{iterations}")
+                                    betaY, betaZ1, betaZ2 = solver.compute_betaY(K)
                                     prices[i] = solver.compute_option_price(K, betaY, betaZ1, betaZ2)
             
                                 mean_price = float(cp.mean(prices))
