@@ -6,9 +6,9 @@ This repository is the official implementation of the paper [Valuation of Americ
  
 | Title | Description |
 |-------|-----|
-| 2d_cuda_jit.py | Replication code for Table 1-2|
-| 2d_cuda_amb.py | Replication code for Table 3-8|
-| 3d_cuda_amb.py | Replication code for Table 9-10|
+| 2D_optimized_numba_cuda.py | Replication code for Table 1-8|
+| 3D_optimized_numba_cuda.py | Replication code for Table 9-12|
+| 1D_optimized_numba_cuda.py | Replication code for Table 13-14|
 ***
 
 ## Dependencies
